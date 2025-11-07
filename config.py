@@ -1,14 +1,22 @@
+""" 
+global config
+"""
+
 class config_global():
 	def __init__(self, is_setup = False):
+		# here define the model and constraint 
 		self.MODEL = ["VGG16","MobileNetV2","Mnasnet","ResNet50","Transformer","GNMT"]
 		self.CST = ["cloud","largeedge","smalledge"]
+		# test
+		# self.period = 1000
 		self.period = 1000
 		self.MODEL_NUM = len(self.MODEL)
 		if(not is_setup):
 			self.CST_NUM = len(self.CST)
 			self.SCEN_TYPE = self.MODEL_NUM * self.CST_NUM
-			self.SCEN_NUM = 10
-			self.PROCESS_NUM = 14
+			# repeat times
+			self.SCEN_NUM = 5
+			self.PROCESS_NUM = 12
 		else:
 			self.CST_NUM = 1 # setup only in cloud constraint scenario
 			self.SCEN_TYPE = self.MODEL_NUM * self.CST_NUM
@@ -17,8 +25,9 @@ class config_global():
 
 		#### MODEL:{0="VGG16",1="MobileNetV2",2="Mnasnet",3="ResNet50",4="Transformer",5="GNMT"}
 		#### CST:{0="cloud",1="largeedge",2="smalledge"}
+		# here choose the model which we don't use
 		PASS_MODEL = [1,2,3,4,5]
-		PASS_CST = [1,2]
+		PASS_CST = [0,1]
 		self.TEST_BOUND = int(self.SCEN_NUM * self.MODEL_NUM * self.CST_NUM)
 		self.PASS = list()
 		for i_PASS in range(0, self.TEST_BOUND):

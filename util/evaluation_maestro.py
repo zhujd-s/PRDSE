@@ -9,6 +9,13 @@ module_path = os.path.abspath(os.path.join(script_dir, '../'))
 if module_path not in sys.path:
 	sys.path.insert(0, module_path)
 
+"""
+
+p is the parallelism
+o is the order of computation
+t is the tiling
+
+"""
 class evaluation_maestro():
 	def __init__(self, iindex, nnmodel, pid, space, is_adaptive = True, is_const = False):
 		self.iindex = iindex

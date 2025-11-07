@@ -159,13 +159,15 @@ def run(args):
 if __name__ == '__main__':
 	algoname = "GA"
 	use_multiprocess = True
+
+
 	global_config = config_global()
 	TEST_BOUND = global_config.TEST_BOUND
 	PROCESS_NUM = global_config.PROCESS_NUM
 	SCEN_TYPE = global_config.SCEN_TYPE
 	SCEN_NUM = global_config.SCEN_NUM
 	PASS = global_config.PASS
-
+	# sys.exit("program is over")
 	args_list = list()
 	objective_record = Manager().list()
 	timecost_record = Manager().list()
@@ -184,5 +186,5 @@ if __name__ == '__main__':
 			if(iindex in PASS): continue
 			#if(iindex != 1): continue
 			run((iindex, objective_record, timecost_record))
-
+	
 	recorder(algoname, global_config, objective_record, timecost_record)

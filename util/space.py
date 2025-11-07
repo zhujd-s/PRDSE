@@ -5,6 +5,7 @@ import pdb
 import os
 import time
 import pandas
+import seaborn as sns
 
 import numpy as np
 from sklearn import manifold
@@ -49,7 +50,7 @@ class dimension_discrete():
 			'''
 			sample_box offers the sample space for discrete dimension
 			every item in sample_box is a avaiable value for that dimension
-			NOW: thr range of sample_box is [rrange[0] ~ rrange[0]+step*(scale-1) rather than [rrange[0] ~ rrange[-1]]
+			NOW: the range of sample_box is [rrange[0] ~ rrange[0]+step*(scale-1) rather than [rrange[0] ~ rrange[-1]]
 			that's not a big deal
 			'''
 			
@@ -178,8 +179,10 @@ class design_space():
 			action_list.append(item.get_current_index())
 		return action_list
 	def print_status(self):
+		count = 0
 		for item in self.dimension_box:
-			print(item.get_name(),item.get_current_value())
+			count = count + 1
+			print(count,":",item.get_name(),item.get_current_value())
 	def sample_one_dimension(self, dimension_index, sample_index):
 		assert (dimension_index >= 0 and dimension_index <= self.lenth-1)
 		self.dimension_box[dimension_index].sample(sample_index)
@@ -228,7 +231,7 @@ class design_space():
 			dimension_upbound.append(item.get_range_upbound())
 		return dimension_upbound
 	def get_dimension_scale_list(self, has_upbound = True):
-		dimension_scale_list = list();
+		dimension_scale_list = list()
 		for item in self.dimension_box:
 			if(has_upbound): dimension_scale_list.append(item.get_scale())
 			else: dimension_scale_list.append(item.get_scale() - 1)
@@ -371,6 +374,7 @@ class design_space():
 			pass
 
 def create_space_maestro(model, is_adaptive = True, is_const = False, target = "largeedge"):
+
 	## get the model from model file
 	if(model == 'VGG16'): model_filename = './desc/model/vgg16_model.m'
 	elif(model == 'MobileNetV2'): model_filename = './desc/model/MobileNetV2_model.m'

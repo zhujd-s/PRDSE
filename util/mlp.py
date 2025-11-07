@@ -108,7 +108,7 @@ class DDPG_mlp_policyfunction(torch.nn.Module):
 		out3 = self.fc3[dimension_index](out2)
 		return torch.tanh(out3) #* self.max_action
 		#return out3
-
+   
 class rnn_policyfunction(torch.nn.Module):
 	def __init__(self, input_lenth, action_scale_list):
 		super(rnn_policyfunction, self).__init__()

@@ -15,10 +15,14 @@ from multiprocessing import Process, Lock, Manager, Pool
 def run(args):
 	iindex, = args
 	print(f"%%%%TEST{iindex} START%%%%")
+
 	config = config_self(iindex, is_setup = True)
+	# model name
 	nnmodel = config.nnmodel
+	# exploration goal
 	goal = config.goal
 	target = config.target
+	# metric list
 	metrics_name = config.metrics_name
 	pid = os.getpid()
 	config.config_check()
@@ -30,26 +34,26 @@ def run(args):
 	sample_warehouse = warehouse(DSE_action_space, config, metrics_name)
 
 	count_period = 0
-	upbound_for_period = 1000
+	upbound_for_period = 10000
 
 	actor = actor_random()
+	print("data/initial_data_warehouse_{}.csv".format(nnmodel))
 
 	if(not os.path.exists("data/initial_data_warehouse_{}.csv".format(nnmodel))):
 		print(f"design space scale:{DSE_action_space.get_scale()}")
 		while(count_period < upbound_for_period):
 			count_period = count_period + 1
 			print(f"count_period:{count_period}", end="\r")
-
 			for step in range(DSE_action_space.get_lenth()):
 				DSE_action_space.sample_one_dimension(dimension_index = step, sample_index = actor.make_policy(DSE_action_space, step))
 			status = DSE_action_space.get_status()
 			action_list = DSE_action_space.get_action_list()
-		            
+
 			#TODO runtime return a correct value which is required to be repaired
 			metrics = evaluation.evaluate(status)
-
 			sample = list(status.values()) + list(metrics.values())
 			initial_sample_warehouse.append(sample)
+		            
 
 		initial_sample_warehouse.save("data/initial_data_warehouse_{}.csv".format(nnmodel))
 		initial_sample_warehouse.save_baseline("data/baseline_{}.csv".format(nnmodel))
@@ -60,6 +64,7 @@ def run(args):
 		initial_sample_warehouse.save_baseline("data/baseline_{}.csv".format(nnmodel))
 		initial_sample_warehouse.save_corr_spearman("data/corr_table_{}.csv".format(nnmodel))
 		initial_sample_warehouse.save_metric_corr_pearson("data/metric_corr_table_{}.csv".format(nnmodel))
+		# initial_sample_warehouse.plot_corr_heatmap("data/metric_corr_table_{}.csv".format(nnmodel))
 
 	DSE_action_space.corr_analysis("data/corr_table_{}.csv".format(nnmodel))
 
@@ -85,6 +90,7 @@ if __name__ == '__main__':
 	use_multiprocess = True
 	global_config = config_global(is_setup = True)
 	TEST_BOUND = global_config.TEST_BOUND
+	# print(TEST_BOUND)
 	PROCESS_NUM = global_config.PROCESS_NUM
 
 	if(use_multiprocess):
@@ -99,3 +105,6 @@ if __name__ == '__main__':
 		for iindex in range(TEST_BOUND):
 			#if(iindex <= 4): continue
 			run((iindex,))
+
+	# run((0,))
+	# print("test_end")

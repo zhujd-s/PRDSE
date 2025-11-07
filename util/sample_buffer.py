@@ -5,6 +5,9 @@ import pandas
 import pdb
 import numpy
 import os 
+import sys
+import matplotlib as plt
+import seaborn as sns
 
 class buffer():
 	def __init__(self, distance_type = "Euclidean", distance_threshold = 0, weight = [], adaptive = False, max_cnt=8000, agent_cnt = 8):
@@ -329,17 +332,18 @@ class simple_warehouse():
 	def save_corr_spearman(self, filepath):
 		assert(self.sample_buffer)
 		data = numpy.array(self.sample_buffer)
-		columns = self.obs_name_list + self.metrics_name_list 
+		columns = self.obs_name_list + self.metrics_name_list
 		dataframe = pandas.DataFrame(data, columns = columns)
 		metrics_corr_table = []
 		for metrics_name in self.metrics_name_list:
 			metrics_corr_list = []
 			for obs_index, obs_name in enumerate(self.obs_name_list):
 				metrics = dataframe[metrics_name]
+				
 				obs = dataframe[obs_name]
 				corr = abs(metrics.corr(obs, method = "spearman"))
 				metrics_corr_list.append(corr)
-
+			
 			metrics_corr_table.append(metrics_corr_list)
 
 		corr_table = numpy.array(metrics_corr_table)
@@ -367,11 +371,52 @@ class simple_warehouse():
 		corr_table_dataframe = pandas.DataFrame(corr_table, columns = self.metrics_name_list)
 		corr_table_dataframe.to_csv(filepath, index = None)
 
+	def plot_corr_heatmap(self, filepath=None):
+		"""
+		plot the heatmap from the csv file
+		"""
+		# 读取 CSV 文件
+		data = numpy.array(self.sample_buffer)
+
+		# 设置画布风格
+		plt.figure(figsize=(10, 8))
+		# sns.set(style="whitegrid", font_scale=1.1)
+
+		# 绘制热力图
+		ax = sns.heatmap(
+			data,
+			cmap="coolwarm",   # 蓝色代表负相关，红色代表正相关
+			annot=True,       # 是否显示数值
+			fmt=".2f",         # 显示小数点后两位
+			linewidths=0.5,
+			cbar=True
+		)
+
+		# 设置标题和标签
+		plt.title("heatmap of the corr analysis", fontsize=16, pad=15)
+		plt.xlabel("Column variables", fontsize=12)
+		plt.ylabel("Row variables", fontsize=12)
+
+		# 旋转坐标标签
+		plt.xticks(rotation=45, ha='right')
+		plt.yticks(rotation=0)
+
+		plt.tight_layout()
+
+		# 保存或显示
+		if filepath:
+			plt.savefig(filepath, dpi=300, bbox_inches='tight')
+			print(f"Heatmap saved to: {filepath}")
+		else:
+			plt.show()
+
 	def load(self, filepath):
 		dataframe = pandas.read_csv(filepath)
-		data = dataframe.iloc[0::].values
-		sample_buffer = data.tolist()
+		# data = dataframe.iloc[0::].values
+		sample_buffer = dataframe.values.tolist()
+		# sample_buffer = data.tolist()
 		self.sample_buffer = sample_buffer
+
 
 	def save(self, filepath):
 		data = numpy.array(self.sample_buffer)

@@ -55,7 +55,7 @@ class config_self():
 			self.AREA_THRESHOLD = 16000000
 			self.POWER_THRESHOLD = 450
 
-		self.THRESHOLD_RATIO = 2
+		self.THRESHOLD_RATIO = 0.5
 		cnt_pes = constraint(name = "cnt_pes", threshold = self.NUMPES_THRESHOLD, threshold_ratio = self.THRESHOLD_RATIO)
 		l1_mem = constraint(name = "l1_mem", threshold = self.L1SIZE_THRESHOLD, threshold_ratio = self.THRESHOLD_RATIO)
 		l2_mem = constraint(name = "l2_mem", threshold = self.L2SIZE_THRESHOLD, threshold_ratio = self.THRESHOLD_RATIO)				
@@ -69,7 +69,7 @@ class config_self():
 		#self.constraints.append(power)
 
 		self.is_adaptive = True
-		self.is_const = False
+		self.is_cfonst = False
 
 		if(not is_setup):
 			baseline_filepath = "./data/baseline_{}.csv".format(self.nnmodel)

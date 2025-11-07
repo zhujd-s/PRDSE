@@ -34,6 +34,7 @@ class RLDSE():
 		self.goal = self.config.goal
 		self.target = self.config.target
 		self.baseline = self.config.baseline
+		self.baseline_max = self.config.baseline_max
 		self.config.config_check()
 		self.pid = os.getpid()
 
@@ -97,7 +98,7 @@ class RLDSE():
 		self.log_table = []
 		self.log_table.append(["intrinsic_reward_true", "extrinsic_reward_true",
 							   "pe_util", "pe_ac_util", "noc_bw_util", "l1_mem_util", "l2_mem_util", "min_margin", "alpha"])
-		
+
 	def train(self):
 		self.t.start("all")
 		period_bound = self.SAMPLE_PERIOD_BOUND + self.PERIOD_BOUND
@@ -146,31 +147,45 @@ class RLDSE():
 
 						pe_req, pe_ac_req, noc_bw_req, l1_mem_req, l2_mem_req = metrics["cnt_pes"], metrics["pe_ac_req"], metrics["noc_bw_req"], metrics["l1_mem_req"], metrics["l2_mem_req"]
 						#### utilizations and margins range in [0,1], metric exceeds the threshold be assigned with util=1 and margin=0
-						pe_const, pe_ac_const, noc_bw_const, l1_mem_const, l2_mem_const = self.constraints.get_threshold("cnt_pes"), metrics["cnt_pes"], all_status["noc_bw"], self.constraints.get_threshold("l1_mem"), self.constraints.get_threshold("l2_mem")
-						pe_util, pe_ac_util, noc_bw_util, l1_mem_util, l2_mem_util = min(pe_req/pe_const,1), min(pe_ac_req/pe_ac_const,1) min(noc_bw_req/noc_bw_const,1), min(l1_mem_req/l1_mem_const,1), min(l2_mem_req/l2_mem_const,1)
+						pe_const, pe_ac_const, noc_bw_const, l1_mem_const, l2_mem_const = \
+						min(self.constraints.get_threshold("cnt_pes"),self.baseline_max["cnt_pes"]), \
+						metrics["cnt_pes"], \
+						min(all_status["noc_bw"],self.baseline_max["noc_bw_req"]), \
+						min(self.constraints.get_threshold("l1_mem"),self.baseline_max["l1_mem_req"]), \
+						min(self.constraints.get_threshold("l2_mem"),self.baseline_max["l2_mem_req"])
+						pe_util, pe_ac_util, noc_bw_util, l1_mem_util, l2_mem_util = min(pe_req/pe_const,1), min(pe_ac_req/pe_ac_const,1), min(noc_bw_req/noc_bw_const,1), min(l1_mem_req/l1_mem_const,1), min(l2_mem_req/l2_mem_const,1)
 						#### calculate the intrinsic reward
-						intrinsic_reward_true = (pe_util * pe_ac_util * noc_bw_util * l1_mem_util * l2_mem_util)**(0.25)
+						# 真值，几个利用率几何平均数（PE配置率（和面积有关系），PE利用率，带宽利用率,l1,l2缓存)
+						intrinsic_reward_true = (pe_util * pe_ac_util * noc_bw_util * l1_mem_util * l2_mem_util)**0.2
+						# 更新最大值
 						if(intrinsic_reward_true > self.max_intrinsic_reward): 
 							self.max_intrinsic_reward = intrinsic_reward_true
 						pe_margin, pe_ac_margin, noc_bw_margin, l1_mem_margin, l2_mem_margin = 1 - pe_util, 1 - pe_ac_util, 1 - noc_bw_util, 1 - l1_mem_util, 1 - l2_mem_util
 						#avg_margin = (pe_margin + noc_bw_margin + l1_mem_margin + l2_mem_margin)/4
-						min_margin = min(pe_margin, pe_ac_margin, noc_bw_margin, l1_mem_margin, l2_mem_margin)
-						self.margin = 0.9*self.margin + 0.1*min_margin
+						#min_margin = min(pe_margin, pe_ac_margin, noc_bw_margin, l1_mem_margin, l2_mem_margin)
+						#self.margin = 0.9*self.margin + 0.1*min_margin
+						mean_marign = (pe_margin + pe_ac_margin + noc_bw_margin + l1_mem_margin + l2_mem_margin)/5
+						self.margin = 0.9*self.margin + 0.1*mean_marign
 						
 						#### calculate the extrinsic reward
 						objectvalue = metrics[self.goal] / self.baseline[self.goal]
 						extrinsic_reward_true = 1 / (objectvalue * self.constraints.get_punishment())
 						if(extrinsic_reward_true > self.max_extrinsic_reward): 
 							self.max_extrinsic_reward = extrinsic_reward_true
-						
+
 						#### suppose beta**0 = 1 and beta**T = 0.01, reduce that beta = e**(-2ln10/T) = 2.71828**(-4.6/period_bound), where T is the period upbound
 						beta = 2.71828**(-4.6/period_bound)
 						#### initially alpha = 0.5; along with the period increasing, it gradually turn to 0
 						clip = lambda value:min(max(value,0.1),0.9)
-						#alpha = clip(1 * beta**period * self.margin)
 						#alpha = clip(1 * beta**period)
-						#alpha = 0.8
-						alpha = 0
+						# alpha = clip(1 * (1 - period/period_bound))
+						#alpha = clip(1 * (1 - period**2/period_bound**2))
+						#alpha = clip(1 * beta**period * self.margin)
+						#alpha = clip(1 * (1 - period/period_bound) * self.margin)
+						alpha = clip(1 * (1 - period**2/period_bound**2) * self.margin)
+						
+						#alpha = 1
+						#alpha = 0
 						#### calculate the reward
 						intrinsic_reward = intrinsic_reward_true/self.max_intrinsic_reward
 						extrinsic_reward = extrinsic_reward_true/self.max_extrinsic_reward
@@ -191,7 +206,8 @@ class RLDSE():
 							log_key_metrics.append(noc_bw_util)
 							log_key_metrics.append(l1_mem_util)
 							log_key_metrics.append(l2_mem_util)
-							log_key_metrics.append(min_margin)
+							#log_key_metrics.append(min_margin)
+							log_key_metrics.append(mean_marign)
 							log_key_metrics.append(alpha)
 							self.log_table.append(log_key_metrics)
 
@@ -204,7 +220,7 @@ class RLDSE():
 					else:
 						if(objectvalue < self.best_objectvalue and self.constraints.is_all_meet()):
 							self.best_objectvalue = objectvalue
-							print(f"$$$$$iindex:{self.iindex}, best:{self.best_objectvalue}, metrics:{metrics}, dim:{action_list[4]}, dim_size:{action_list[5:8]}")
+							print(f"$$$$$period:{period}, iindex:{self.iindex}, best:{self.best_objectvalue}, metrics:{metrics}")
 						self.best_objectvalue_list.append(self.best_objectvalue)
 					#print(f"period:{period}, this:{objectvalue}, best:{self.best_objectvalue}, metrics:{metrics}, reward:{reward}", end = '\n')
 					#print(f"period:{period}, iindex:{self.iindex}, action_list:{action_list[4:8]}, metrics:{metrics}, , baseline:{self.baseline[self.goal]}")
@@ -296,7 +312,7 @@ def run(args):
 	writelog(DSE.log_table, iindex)
 
 if __name__ == '__main__':
-	algoname = "RLDSE_alpha=0_k=100"
+	algoname = "RLDSE_my_first_test"
 	use_multiprocess = True
 	global_config = config_global()
 	TEST_BOUND = global_config.TEST_BOUND
