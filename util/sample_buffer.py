@@ -6,7 +6,7 @@ import pdb
 import numpy
 import os 
 import sys
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import seaborn as sns
 
 class buffer():
@@ -373,37 +373,47 @@ class simple_warehouse():
 
 	def plot_corr_heatmap(self, filepath=None):
 		"""
-		plot the heatmap from the csv file
+    	plot the heatmap from the csv file
 		"""
-		# 读取 CSV 文件
+        # 读取 CSV 文件
 		data = numpy.array(self.sample_buffer)
+		columns = self.obs_name_list + self.metrics_name_list
+		dataframe = pandas.DataFrame(data, columns= columns)
+		metric_dataframe = dataframe[self.metrics_name_list]
+		corr = metric_dataframe.corr(method= "spearman")
 
-		# 设置画布风格
+        # 设置字体
+		plt.rcParams['font.family'] = 'Times New Roman'
+
+        # 设置画布风格
 		plt.figure(figsize=(10, 8))
-		# sns.set(style="whitegrid", font_scale=1.1)
+        # sns.set(style="whitegrid", font_scale=1.1)
 
-		# 绘制热力图
+        # 绘制热力图
 		ax = sns.heatmap(
-			data,
-			cmap="coolwarm",   # 蓝色代表负相关，红色代表正相关
-			annot=True,       # 是否显示数值
-			fmt=".2f",         # 显示小数点后两位
-			linewidths=0.5,
-			cbar=True
-		)
+            corr,
+            cmap="coolwarm",   # 蓝色代表负相关，红色代表正相关
+            annot=True,       # 是否显示数值
+            fmt=".2f",         # 显示小数点后两位
+            linewidths=0.5,
+            cbar=True
+        )
 
-		# 设置标题和标签
-		plt.title("heatmap of the corr analysis", fontsize=16, pad=15)
-		plt.xlabel("Column variables", fontsize=12)
-		plt.ylabel("Row variables", fontsize=12)
+        # 设置标题和标签
+		plt.title("heatmap of the corr analysis", 
+            fontname='Times New Roman',
+            fontsize=16, 
+            pad=15)
+		plt.xlabel("Metrics", fontsize=12)
+        # plt.ylabel("Row variables", fontsize=12)
 
-		# 旋转坐标标签
+        # 旋转坐标标签
 		plt.xticks(rotation=45, ha='right')
 		plt.yticks(rotation=0)
 
 		plt.tight_layout()
 
-		# 保存或显示
+        # 保存或显示
 		if filepath:
 			plt.savefig(filepath, dpi=300, bbox_inches='tight')
 			print(f"Heatmap saved to: {filepath}")
@@ -435,6 +445,11 @@ class simple_warehouse():
 		data_baseline = numpy.array(baseline).reshape(1, len(baseline))
 		dataframe_baseline = pandas.DataFrame(data_baseline, columns = columns)
 		dataframe_baseline.to_csv(filepath, index = None)
+
+	def print_HRP_name(self, HRP):
+		columns = self.obs_name_list + self.metrics_name_list
+		HRP_name = [columns[i] for i in HRP]
+		print(HRP_name)
 
 class warehouse():
 	def __init__(self, design_space, config, metrics_name,

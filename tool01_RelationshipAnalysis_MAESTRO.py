@@ -64,18 +64,18 @@ def run(args):
 		initial_sample_warehouse.save_baseline("data/baseline_{}.csv".format(nnmodel))
 		initial_sample_warehouse.save_corr_spearman("data/corr_table_{}.csv".format(nnmodel))
 		initial_sample_warehouse.save_metric_corr_pearson("data/metric_corr_table_{}.csv".format(nnmodel))
-		# initial_sample_warehouse.plot_corr_heatmap("data/metric_corr_table_{}.csv".format(nnmodel))
+		initial_sample_warehouse.plot_corr_heatmap()
 
 	DSE_action_space.corr_analysis("data/corr_table_{}.csv".format(nnmodel))
 
-	sample_warehouse.load_baseline("data/baseline_{}.csv".format(nnmodel))
-	for sample in initial_sample_warehouse.sample_buffer:
-		sample_warehouse.update(sample)
+	# sample_warehouse.load_baseline("data/baseline_{}.csv".format(nnmodel))
+	# for sample in initial_sample_warehouse.sample_buffer:
+	# 	sample_warehouse.update(sample)
 
-	sample_warehouse.save("data/data_warehouse_{}.csv".format(nnmodel))
-	sample_warehouse.load("data/data_warehouse_{}.csv".format(nnmodel))
+	# sample_warehouse.save("data/data_warehouse_{}.csv".format(nnmodel))
+	# sample_warehouse.load("data/data_warehouse_{}.csv".format(nnmodel))
 
-	sample_buffer = sample_warehouse.create_buffer()
+	# sample_buffer = sample_warehouse.create_buffer()
 
 	#sample_buffer.print()
 
@@ -93,18 +93,18 @@ if __name__ == '__main__':
 	# print(TEST_BOUND)
 	PROCESS_NUM = global_config.PROCESS_NUM
 
-	if(use_multiprocess):
-		args_list = list()
-		for iindex in range(TEST_BOUND):
-			args_list.append((iindex,))
-		pool = Pool(PROCESS_NUM)
-		pool.map(run, args_list)
-		pool.close()
-		pool.join()
-	else:
-		for iindex in range(TEST_BOUND):
-			#if(iindex <= 4): continue
-			run((iindex,))
+	# if(use_multiprocess):
+	# 	args_list = list()
+	# 	for iindex in range(TEST_BOUND):
+	# 		args_list.append((iindex,))
+	# 	pool = Pool(PROCESS_NUM)
+	# 	pool.map(run, args_list)
+	# 	pool.close()
+	# 	pool.join()
+	# else:
+	# 	for iindex in range(TEST_BOUND):
+	# 		#if(iindex <= 4): continue
+	# 		run((iindex,))
 
-	# run((0,))
-	# print("test_end")
+	run((3,))
+	print("test_end")
