@@ -8,6 +8,9 @@ import os
 import sys
 import matplotlib.pyplot as plt
 import seaborn as sns
+import xgboost as xgb
+import shap
+from sklearn.preprocessing import StandardScaler
 
 class buffer():
 	def __init__(self, distance_type = "Euclidean", distance_threshold = 0, weight = [], adaptive = False, max_cnt=8000, agent_cnt = 8):
@@ -419,6 +422,107 @@ class simple_warehouse():
 			print(f"Heatmap saved to: {filepath}")
 		else:
 			plt.show()
+
+	def shap_analysis(self ):
+		data = numpy.array(self.sample_buffer)
+		columns = self.obs_name_list + self.metrics_name_list
+		dataframe = pandas.DataFrame(data, columns= columns)
+
+		remove_metric = ["edp", "latency", "energy"]
+		using_metric = []
+		for metric in self.metrics_name_list:
+			if metric not in remove_metric:
+				using_metric.append(metric)
+		# print(using_metric)
+		# sys.exit("test end")
+		X = dataframe[using_metric].fillna(0)
+		Y = dataframe["edp"]
+
+		# 标准化
+		scaler = StandardScaler()
+		X_scaled = scaler.fit_transform(X)
+
+		model = xgb.XGBRegressor(n_estimators=300, 
+							   learning_rate=0.05, 
+							   max_depth=5, 
+							   subsample=0.9, 
+							   colsample_bytree=0.9
+							   )
+
+		model.fit(X_scaled, Y)
+
+		# explain the contribution rate of each metric with SHAP
+		explainer = shap.Explainer(model)
+		shap_values = explainer(X_scaled)
+		mean_abs_shap = numpy.abs(shap_values.values).mean(axis=0)
+
+		importance = pandas.DataFrame({
+			"metric": using_metric,
+			"shap_importance": mean_abs_shap
+		}).sort_values("shap_importance", ascending= False)
+
+		print("\n=====importance of the metrics=====")
+		print(importance)
+
+		# ===== 冗余检测（相关性过滤）=====
+		corr = dataframe[self.metrics_name_list].corr().abs()
+
+		print("\n=== 指标相关性矩阵 ===")
+		print(corr)
+
+		# 冗余去除：如果两个指标相关性 > 0.85，则只保留 SHAP 重要性更高的
+		selected = []
+		for m in importance["metric"]:
+			if all(corr[m][selected] < 0.85) or len(selected)==0:
+				selected.append(m)
+
+		print("\n=== 推荐的 Top-K 内在指标（可直接用于 PRDSE） ===")
+		print(selected)
+		return importance
+
+	def shap_plot_bar(self, importance):
+		# from matplotlib import font_manager
+		# font_path = "/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf"
+		# prop = font_manager.FontProperties(fname=font_path)
+		plt.rcParams.update({
+			"font.family": "Times New Roman",  # 设置字体
+			"font.size": 11,                   # 正文字体大小
+			"axes.labelsize": 12,              # 坐标轴标签字体
+			"axes.titlesize": 12,
+			"xtick.labelsize": 10,
+			"ytick.labelsize": 10,
+			"legend.fontsize": 10,
+			"figure.dpi": 300,                 # 高分辨率
+			"savefig.dpi": 600,                # 输出时更清晰
+			"axes.edgecolor": "black",
+			"axes.linewidth": 1.0,             # 坐标轴线条宽度
+		})
+
+		# ===== 绘制条形图 =====
+		plt.figure(figsize=(5.2, 3.5))  # 控制论文图宽高比
+
+		bars = plt.barh(
+			importance["metric"], 
+			importance["shap_importance"],
+			color="gray", edgecolor="black", height=0.6
+		)
+
+		plt.gca().invert_yaxis()  # 最高重要性在上
+		plt.xlabel("Mean |SHAP Value", labelpad=6)
+		plt.ylabel("Intrinsic Metric", labelpad=6)
+		plt.title("Feature Importance of Intrinsic Metrics", pad=8, fontweight="bold")
+
+		# # 添加数值标签（可选，更学术地保留一位小数）
+		# for bar in bars:
+		# 	width = bar.get_width()
+		# 	plt.text(width + 0.0005, bar.get_y() + bar.get_height()/2,
+		# 			f"{width:.3f}", va="center", fontsize=9, fontname="Times New Roman")
+
+		plt.grid(axis='x', linestyle='--', linewidth=0.6, alpha=0.5)
+		plt.tight_layout()
+		plt.show()
+
+
 
 	def load(self, filepath):
 		dataframe = pandas.read_csv(filepath)
