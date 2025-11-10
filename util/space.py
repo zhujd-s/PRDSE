@@ -251,7 +251,7 @@ class design_space():
 		if(dimension_index < self.const_lenth):
 			layer_index = 0
 			layer = "Hardware"
-			temp_layer = self.layer_name[layer_index]
+			# temp_layer = self.layer_name[layer_index]
 		else:
 			layer_index = int((dimension_index - self.const_lenth)/self.dynamic_lenth)
 			layer = self.layer_name[layer_index]
@@ -467,13 +467,13 @@ def create_space_maestro(model, is_adaptive = True, is_const = False, target = "
 		for dimension_index, dimension in enumerate(dimension_list):
 			block_index = dimension_set.index(dimension)
 			block_list.append(block_index)
-		print(f"layer leth (after being clustered): {len(dimension_set)}")
+		print(f"layer lenth (after being clustered): {len(dimension_set)}")
 	else:
 		dimension_set = dimension_list
 		for dimension_index, dimension in enumerate(dimension_list):
 			block_index = dimension_index
 			block_list.append(block_index)
-		print(f"layer leth (without being clustered): {len(dimension_set)}")
+		print(f"layer lenth (without being clustered): {len(dimension_set)}")
 
 	## initialize the design space
 	DSE_action_space = design_space()

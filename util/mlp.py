@@ -96,6 +96,7 @@ class DDPG_mlp_policyfunction(torch.nn.Module):
 		self.fc3 = list()
 		for action_scale in self.action_scale_list:
 			self.fc3.append(torch.nn.Linear(64, action_scale))
+
 		self.fc3 = torch.nn.ModuleList(self.fc3)
 	
 	def forward(self, status_input, dimension_index):

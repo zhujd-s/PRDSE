@@ -15,8 +15,10 @@ class config_global():
 			self.CST_NUM = len(self.CST)
 			self.SCEN_TYPE = self.MODEL_NUM * self.CST_NUM
 			# repeat times
-			self.SCEN_NUM = 5
-			self.PROCESS_NUM = 12
+			# self.SCEN_NUM = 5
+			self.SCEN_NUM = 1
+			# self.PROCESS_NUM = 12
+			self.PROCESS_NUM = 10
 		else:
 			self.CST_NUM = 1 # setup only in cloud constraint scenario
 			self.SCEN_TYPE = self.MODEL_NUM * self.CST_NUM
@@ -54,5 +56,5 @@ class config_global():
 		#### step3 define goal
 		self.goal = "latency"
 		#self.goal = "energy"
-		#self.goal = "edp"
+		# self.goal = "edp"
 		self.goal_index = self.metrics_name.index(self.goal)

@@ -323,6 +323,7 @@ class actor_policyfunction():
 					#print(f"probs_noise:{probs_noise}")
 				else:
 					probs_noise = probs
+				# print(probs_noise)
 				action_index = probs_noise.multinomial(num_samples = 1).data
 			else:
 				action_index = torch.tensor(dimension.get_current_index())

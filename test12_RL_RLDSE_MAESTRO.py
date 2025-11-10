@@ -99,6 +99,9 @@ class RLDSE():
 		self.log_table.append(["intrinsic_reward_true", "extrinsic_reward_true",
 							   "pe_util", "pe_ac_util", "noc_bw_util", "l1_mem_util", "l2_mem_util", "min_margin", "alpha"])
 
+		# self.log_table.append(["intrinsic_reward_true", "extrinsic_reward_true",
+		# 					   "pe_util", "l2_mem_req", "noc_bw_req", "area", "l1_mem_req", "min_margin", "alpha"])
+
 	def train(self):
 		self.t.start("all")
 		period_bound = self.SAMPLE_PERIOD_BOUND + self.PERIOD_BOUND
@@ -126,6 +129,7 @@ class RLDSE():
 					action = self.actor.action_choose_with_no_grad(self.policyfunction, self.DSE_action_space, current_status, step, std=self.noise_std)
 				elif(self.policy_type == "RNN"):
 					action, rnn_state = self.actor.action_choose_rnn(self.policyfunction, self.DSE_action_space, current_status, step, rnn_state, std=self.noise_std)
+
 				action_list.append(action)
 
 				#take action and get next state S'
@@ -133,7 +137,7 @@ class RLDSE():
 
 				#### in MC method, we can only sample in last step
 				#### and compute reward R
-		
+                    
 				#TODO:design a good reward function
 				if(step < (self.DSE_action_space.get_lenth() - 1)): #delay reward, only in last step the reward will be asigned
 					reward = float(0)
@@ -154,9 +158,13 @@ class RLDSE():
 						min(self.constraints.get_threshold("l1_mem"),self.baseline_max["l1_mem_req"]), \
 						min(self.constraints.get_threshold("l2_mem"),self.baseline_max["l2_mem_req"])
 						pe_util, pe_ac_util, noc_bw_util, l1_mem_util, l2_mem_util = min(pe_req/pe_const,1), min(pe_ac_req/pe_ac_const,1), min(noc_bw_req/noc_bw_const,1), min(l1_mem_req/l1_mem_const,1), min(l2_mem_req/l2_mem_const,1)
+						# pe_util = 1 - pe_util #PE配置率提高面积会增加，感觉面积变小才好
 						#### calculate the intrinsic reward
-						# 真值，几个利用率几何平均数（PE配置率（和面积有关系），PE利用率，带宽利用率,l1,l2缓存)
-						intrinsic_reward_true = (pe_util * pe_ac_util * noc_bw_util * l1_mem_util * l2_mem_util)**0.2
+						# # 真值，几个利用率几何平均数（PE配置率（和面积有关系），PE利用率，带宽利用率,l1,l2缓存)
+						# intrinsic_reward_true = (pe_util * pe_ac_util * noc_bw_util * l1_mem_util * l2_mem_util)**0.2
+						# 加权几何平均数
+						log_sum = 0.076 * np.log(pe_util + 1e-8) + 0.193 * np.log(pe_ac_util + 1e-8) + 0.155 * np.log(noc_bw_util + 1e-8)+ 0.054 * np.log(l1_mem_util + 1e-8)+ 0.522 * np.log(l2_mem_util + 1e-8)
+						intrinsic_reward_true = np.exp(log_sum)
 						# 更新最大值
 						if(intrinsic_reward_true > self.max_intrinsic_reward): 
 							self.max_intrinsic_reward = intrinsic_reward_true
@@ -227,6 +235,7 @@ class RLDSE():
 					#print(f"iindex:{self.iindex}, best:{self.best_objectvalue}, metrics:{metrics}")
 				reward_list.append(reward)
 
+			# print(reward_list)
 			#compute and record return
 			return_g = 0
 			T = len(reward_list)
@@ -312,8 +321,8 @@ def run(args):
 	writelog(DSE.log_table, iindex)
 
 if __name__ == '__main__':
-	algoname = "RLDSE_my_first_test"
-	use_multiprocess = True
+	algoname = "RLDSE_my_second_test"
+	use_multiprocess = False
 	global_config = config_global()
 	TEST_BOUND = global_config.TEST_BOUND
 	PROCESS_NUM = global_config.PROCESS_NUM

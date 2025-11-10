@@ -427,7 +427,7 @@ class simple_warehouse():
 		data = numpy.array(self.sample_buffer)
 		columns = self.obs_name_list + self.metrics_name_list
 		dataframe = pandas.DataFrame(data, columns= columns)
-
+		dataframe["pe_util"] = dataframe["pe_util"]/dataframe["cnt_pes"]
 		remove_metric = ["edp", "latency", "energy"]
 		using_metric = []
 		for metric in self.metrics_name_list:
@@ -463,9 +463,10 @@ class simple_warehouse():
 
 		print("\n=====importance of the metrics=====")
 		print(importance)
-
-		# ===== 冗余检测（相关性过滤）=====
-		corr = dataframe[self.metrics_name_list].corr().abs()
+		# print(dataframe[self.metrics_name_list])
+		# sys.exit()
+		# ===== 冗余检测(相关性过滤)=====
+		corr = dataframe[self.metrics_name_list].corr(method="spearman")
 
 		print("\n=== 指标相关性矩阵 ===")
 		print(corr)
@@ -476,8 +477,30 @@ class simple_warehouse():
 			if all(corr[m][selected] < 0.85) or len(selected)==0:
 				selected.append(m)
 
-		print("\n=== 推荐的 Top-K 内在指标（可直接用于 PRDSE） ===")
+		print("\n=== 推荐的 Top-K 内在指标(可直接用于 PRDSE) ===")
 		print(selected)
+
+		selected_importance = importance[importance["metric"].isin(selected)].copy()
+
+		# softmax归一化
+		x = numpy.log(selected_importance["shap_importance"])
+		exp_values = numpy.exp(x - numpy.max(x))
+		softmax_weights = exp_values / numpy.sum(exp_values)
+
+		selected_importance["softmax_weight"] = softmax_weights
+
+		print("\n=== 归一化后的重要性权重(Softmax) ===")
+		print(selected_importance[["metric", "softmax_weight"]])
+
+		'''
+       	metric  softmax_weight
+		8  l2_mem_req        0.521690
+		5     pe_util        0.193847
+		6  noc_bw_req        0.155222
+		0        area        0.076009
+		7  l1_mem_req        0.053233
+		
+		'''
 		return importance
 
 	def shap_plot_bar(self, importance):
@@ -512,7 +535,7 @@ class simple_warehouse():
 		plt.ylabel("Intrinsic Metric", labelpad=6)
 		plt.title("Feature Importance of Intrinsic Metrics", pad=8, fontweight="bold")
 
-		# # 添加数值标签（可选，更学术地保留一位小数）
+		# # 添加数值标签(可选，更学术地保留一位小数)
 		# for bar in bars:
 		# 	width = bar.get_width()
 		# 	plt.text(width + 0.0005, bar.get_y() + bar.get_height()/2,
