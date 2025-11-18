@@ -428,7 +428,9 @@ class simple_warehouse():
 		columns = self.obs_name_list + self.metrics_name_list
 		dataframe = pandas.DataFrame(data, columns= columns)
 		dataframe["pe_util"] = dataframe["pe_util"]/dataframe["cnt_pes"]
-		remove_metric = ["edp", "latency", "energy"]
+		# remove_metric = ["latency", "energy"]
+		remove_metric = ["edp","latency", "energy"]
+
 		using_metric = []
 		for metric in self.metrics_name_list:
 			if metric not in remove_metric:
@@ -452,9 +454,9 @@ class simple_warehouse():
 		model.fit(X_scaled, Y)
 
 		# explain the contribution rate of each metric with SHAP
-		explainer = shap.Explainer(model)
-		shap_values = explainer(X_scaled)
-		mean_abs_shap = numpy.abs(shap_values.values).mean(axis=0)
+		explainer = shap.TreeExplainer(model)
+		shap_values = explainer.shap_values(X_scaled)
+		mean_abs_shap = numpy.abs(shap_values).mean(axis=0)
 
 		importance = pandas.DataFrame({
 			"metric": using_metric,
@@ -466,7 +468,7 @@ class simple_warehouse():
 		# print(dataframe[self.metrics_name_list])
 		# sys.exit()
 		# ===== 冗余检测(相关性过滤)=====
-		corr = dataframe[self.metrics_name_list].corr(method="spearman")
+		corr = dataframe[self.metrics_name_list].corr(method="spearman").abs()
 
 		print("\n=== 指标相关性矩阵 ===")
 		print(corr)
@@ -501,7 +503,85 @@ class simple_warehouse():
 		7  l1_mem_req        0.053233
 		
 		'''
-		return importance
+		X_scaled_df = pandas.DataFrame(X_scaled, columns=using_metric)
+
+		return importance, shap_values, X_scaled_df
+	
+	def shap_dependence_plot(self, shap_values, X_scaled, feature_to_plot):
+		# === 学术风格字体 ===
+		plt.rcParams["font.family"] = "Times New Roman"
+		plt.rcParams["axes.linewidth"] = 1.2     # 坐标轴粗细
+		plt.rcParams["xtick.major.width"] = 1.2
+		plt.rcParams["ytick.major.width"] = 1.2
+		plt.rcParams["font.size"] = 14
+
+
+
+		# === 创建高质量画布 ===
+		plt.figure(figsize=(7, 5), dpi=300)
+
+		shap.dependence_plot(
+			feature_to_plot,
+			shap_values,
+			X_scaled,
+			interaction_index="edp",
+			alpha=0.7,             # 散点透明度更适合论文展示
+			dot_size=18,           # 合适点大小
+			show=False
+		)
+
+		# === 设置标题、坐标轴等学术化风格 ===
+		plt.title(f"SHAP Dependence: {feature_to_plot}", fontsize=16, fontweight="bold")
+		plt.xlabel(feature_to_plot, fontsize=15, fontweight="bold")
+		plt.ylabel("SHAP Value", fontsize=15, fontweight="bold")
+
+		# 去掉顶部和右侧边线（论文常见）
+		ax = plt.gca()
+		ax.spines["top"].set_visible(False)
+		ax.spines["right"].set_visible(False)
+
+		# 更加紧凑的布局
+		plt.tight_layout()
+
+		# 保存到文件
+		plt.savefig("l2_men_req_dependence.png", dpi=300, bbox_inches="tight")
+
+		plt.show()
+
+	def plot_shap_summary_academic(self, shap_values, X_df, save_path=None):
+		# === 设置论文风格 ===
+		plt.rcParams.update({
+			"font.family": "Times New Roman",
+			"font.size": 11,
+			"axes.labelsize": 11,
+			"xtick.labelsize": 10,
+			"ytick.labelsize": 10,
+			"figure.dpi": 300,
+			"savefig.dpi": 600,
+		})
+
+		# === 如果 shap_values 是 Explanation，转换为 numpy ===
+		if hasattr(shap_values, "values"):
+			shap_array = shap_values.values
+		else:
+			shap_array = shap_values
+
+		# === Summary Plot（Beeswarm）===
+		plt.figure(figsize=(6, 4))
+
+		shap.summary_plot(
+			shap_array,
+			X_df,
+			plot_type="dot",
+			show=False
+		)
+
+		plt.title("SHAP Summary Plot", fontsize=12, fontweight="bold", pad=10)
+
+		if save_path is not None:
+			plt.savefig(save_path, bbox_inches="tight")
+
+		plt.show()
 
 	def shap_plot_bar(self, importance):
 		# from matplotlib import font_manager

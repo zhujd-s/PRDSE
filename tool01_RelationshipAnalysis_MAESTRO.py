@@ -63,11 +63,13 @@ def run(args):
 	else:
 		initial_sample_warehouse.load("data/initial_data_warehouse_{}.csv".format(nnmodel))
 		# initial_sample_warehouse.save_baseline("data/baseline_{}.csv".format(nnmodel))
-		initial_sample_warehouse.save_corr_spearman("data/corr_table_{}.csv".format(nnmodel))
-		initial_sample_warehouse.save_metric_corr_pearson("data/metric_corr_table_{}.csv".format(nnmodel))
+		# initial_sample_warehouse.save_corr_spearman("data/corr_table_{}.csv".format(nnmodel))
+		# initial_sample_warehouse.save_metric_corr_pearson("data/metric_corr_table_{}.csv".format(nnmodel))
 		# initial_sample_warehouse.plot_corr_heatmap()
-		importance = initial_sample_warehouse.shap_analysis()
-		# initial_sample_warehouse.shap_plot_bar(importance)
+		importance, shap_values, X_scaled = initial_sample_warehouse.shap_analysis()
+		# initial_sample_warehouse.shap_dependence_plot(shap_values, X_scaled, "l2_mem_req")
+		# initial_sample_warehouse.plot_shap_summary_academic(shap_values, X_scaled)
+		initial_sample_warehouse.shap_plot_bar(importance)
 
 	# DSE_action_space.corr_analysis("data/corr_table_{}.csv".format(nnmodel))
 
