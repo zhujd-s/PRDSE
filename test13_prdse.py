@@ -289,7 +289,7 @@ class RLDSE():
 							entropy_item = -1 * self.ENTROPY_RATIO * s_entropy
 							sample_loss = sample_loss + return_item + entropy_item
 					#### accumulate loss
-					sample_loss = sample_loss / T
+					sample_loss = sample_loss / T 
 					loss = loss + sample_loss
 				loss = loss / self.BATCH_SIZE
 
@@ -321,8 +321,8 @@ def run(args):
 	writelog(DSE.log_table, iindex)
 
 if __name__ == '__main__':
-	algoname = "RLDSE_my_second_test"
-	use_multiprocess = False
+	algoname = "RLDSE_2models_1st_notrans"
+	use_multiprocess = True
 	global_config = config_global()
 	TEST_BOUND = global_config.TEST_BOUND
 	PROCESS_NUM = global_config.PROCESS_NUM

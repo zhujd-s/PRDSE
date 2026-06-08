@@ -70,38 +70,58 @@ class config_self():
 
 		self.is_adaptive = True
 		self.is_cfonst = False
+		self.extended_metric_names = ["throughput", "throughput_per_energy", "offchip_bw_req"]
 
 		if(not is_setup):
 			baseline_filepath = "./data/baseline_{}.csv".format(self.nnmodel)
 			assert(os.path.exists(baseline_filepath))
 			self.baseline = self.load_metric_baseline(baseline_filepath)
 			self.baseline_max = self.load_metric_baseline_max(baseline_filepath)
+			baseline_extended_filepath = "./data/baseline_extended_{}.csv".format(self.nnmodel)
+			if(os.path.exists(baseline_extended_filepath)):
+				self.extended_baseline = self.load_extended_metric_baseline(baseline_extended_filepath)
+				self.extended_baseline_max = self.load_extended_metric_baseline_max(baseline_extended_filepath)
+			else:
+				self.extended_baseline = dict()
+				self.extended_baseline_max = dict()
 			self.goal_baseline = self.baseline[self.goal]
 
 	def load_metric_baseline(self, filepath):
+		return self.load_selected_metric_baseline(filepath, self.metrics_name)
+
+	def load_metric_baseline_max(self, filepath):
+		return self.load_selected_metric_baseline_max(filepath, self.metrics_name)
+
+	def load_selected_metric_baseline(self, filepath, metric_names):
 		#### get the max value in initial_buffer as the baseline
 		dataframe_baseline = pandas.read_csv(filepath)
-		data_baseline = dataframe_baseline[self.metrics_name]
+		data_baseline = dataframe_baseline[metric_names]
 		baseline = data_baseline.to_dict(orient ="records")[0]
 
 		#### get the average value in initial_buffer as the baseline
 		metrics_avg_name = list()
-		for name in self.metrics_name:
+		for name in metric_names:
 			metrics_avg_name.append(name + "_avg")
-		data_average = dataframe_baseline[metrics_avg_name]
-		baseline_avg = data_average.to_dict(orient ="records")[0]
-		for key, avg_key in zip( list(baseline.keys()), list(baseline_avg.keys()) ):
-			baseline[key] = baseline_avg[avg_key]
+		if(all(name in dataframe_baseline.columns for name in metrics_avg_name)):
+			data_average = dataframe_baseline[metrics_avg_name]
+			baseline_avg = data_average.to_dict(orient ="records")[0]
+			for key, avg_key in zip( list(baseline.keys()), list(baseline_avg.keys()) ):
+				baseline[key] = baseline_avg[avg_key]
 
 		return baseline
 
-	def load_metric_baseline_max(self, filepath):
+	def load_selected_metric_baseline_max(self, filepath, metric_names):
 		#### get the max value in initial_buffer as the baseline
 		dataframe_baseline = pandas.read_csv(filepath)
-		data_baseline = dataframe_baseline[self.metrics_name]
+		data_baseline = dataframe_baseline[metric_names]
 		baseline = data_baseline.to_dict(orient ="records")[0]
-
 		return baseline
+
+	def load_extended_metric_baseline(self, filepath):
+		return self.load_selected_metric_baseline(filepath, self.extended_metric_names)
+
+	def load_extended_metric_baseline_max(self, filepath):
+		return self.load_selected_metric_baseline_max(filepath, self.extended_metric_names)
 
 	def config_check(self):
 		print(f"######Config Check######")

@@ -266,6 +266,7 @@ class evaluation_maestro():
 			layer_name = df[" Layer Number"]
 			runtime_perlayer = np.array(df[" Runtime (Cycles)"]).reshape(-1, 1)
 			throughput_perlayer = np.array(df[" Throughput (MACs/Cycle)"]).reshape(-1, 1)
+			throughput_per_energy_perlayer = np.array(df[" Throughput Per Energy (GMACs/s*J)"]).reshape(-1, 1)
 			energy_perlayer = np.array(df[" Activity count-based Energy (nJ)"]).reshape(-1, 1)
 			area_perlayer = np.array(df[" Area"]).reshape(-1, 1)
 			power_perlayer = np.array(df[" Power"]).reshape(-1, 1)
@@ -274,6 +275,7 @@ class evaluation_maestro():
 			#### intrinsic metris
 			pe_ac_perlayer = np.array(df["Avg number of utilized PEs"]).reshape(-1, 1)#np.array(df[" Avg number of utilized PEs"]).reshape(-1, 1)
 			noc_bw_perlayer = np.array(df[" Avg BW Req"]).reshape(-1, 1)
+			offchip_bw_perlayer = np.array(df[" Offchip BW Req (Elements/cycle)"]).reshape(-1, 1)
 			l1_size_perlayer = np.array(df[" L1 SRAM Size Req (Bytes)"]).reshape(-1, 1)
 			l2_size_perlayer = np.array(df["  L2 SRAM Size Req (Bytes)"]).reshape(-1, 1)
 
@@ -283,6 +285,7 @@ class evaluation_maestro():
 			area = np.max(area_perlayer)
 			power = np.mean(power_perlayer)
 			throughput = mac/runtime
+			throughput_per_energy = np.mean(throughput_per_energy_perlayer)
 			edp = runtime*energy
 			l1_size = np.max(l1_size_perlayer)
 			l2_size = np.max(l2_size_perlayer)
@@ -290,6 +293,7 @@ class evaluation_maestro():
 			#### intrinsic metris
 			pe_ac_req = np.mean(pe_ac_perlayer)
 			noc_bw_req = np.mean(noc_bw_perlayer)
+			offchip_bw_req = np.mean(offchip_bw_perlayer)
 			l1_mem_req = np.mean(l1_size_perlayer)
 			l2_mem_req = np.mean(l2_size_perlayer)
 
@@ -300,7 +304,8 @@ class evaluation_maestro():
 
 			metrics = {
 				'latency':runtime, # unit: cycle
-				#'throughput':throughput, # unit: MACs/cycle
+				'throughput':throughput, # unit: MACs/cycle
+				'throughput_per_energy':throughput_per_energy, # unit: GMACs/s*J
 				'energy':energy, # unit: nJ
 				'area':area, # unit: um^2
 				'power':power/1000, # unit: W (1000mW)
@@ -311,6 +316,7 @@ class evaluation_maestro():
 				'edp':edp,
 				'pe_ac_req':pe_ac_req,
 				'noc_bw_req':noc_bw_req,
+				'offchip_bw_req':offchip_bw_req,
 				'l1_mem_req':l1_mem_req,
 				'l2_mem_req':l2_mem_req,
 			}
