@@ -1,5 +1,10 @@
 # record outputs and experiment artifacts will not be tracked
 record/**
+!record/
+!record/log/
+!record/log/**/
+record/log/**/*.csv
+!record/log/**/.gitkeep
 
 # dataflow and hw description files will not be updated
 desc/dataflow_*.m
