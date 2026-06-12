@@ -89,7 +89,6 @@ class RLDSE():
 		self.CONTROLLER_GRAD_NORM = 1.0
 		self.CONTROLLER_BASELINE_BETA = 0.9
 		self.CONTROLLER_IMPROVEMENT_BONUS = 1.5
-		self.CONTROLLER_OBJECTIVE_PROGRESS = 0.6
 		self.LAMBDA_EXT_START = 0.1
 		self.LAMBDA_EXT_END = 0.9
 		self.LAMBDA_EXT_DELTA_SCALE = 0.1
@@ -353,11 +352,7 @@ class RLDSE():
 							torch.sum((metric_weights_tensor - self.default_metric_weights_tensor)**2) +
 							(learned_lambda_ext_scalar - self.default_lambda_ext)**2
 						)
-						if(progress > self.CONTROLLER_OBJECTIVE_PROGRESS):
-							controller_reward_tensor = extrinsic_reward_tensor
-						else:
-							controller_reward_tensor = final_reward_tensor
-						controller_loss = -controller_advantage_tensor * controller_reward_tensor + controller_reg_loss
+						controller_loss = -controller_advantage_tensor * final_reward_tensor + controller_reg_loss
 						self.controller_optimizer.zero_grad()
 						controller_loss.backward()
 						torch.nn.utils.clip_grad_norm_(self.metric_controller.parameters(), self.CONTROLLER_GRAD_NORM)
