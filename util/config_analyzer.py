@@ -33,6 +33,8 @@ class config_self():
 		elif(model_type == 3): self.nnmodel = "ResNet50"
 		elif(model_type == 4): self.nnmodel = "Transformer"
 		elif(model_type == 5): self.nnmodel = "GNMT"
+		elif(model_type == 6): self.nnmodel = "Bert_small"
+		elif(model_type == 7): self.nnmodel = "Bert_base"
 		else: pass
 		#### define the constrain
 

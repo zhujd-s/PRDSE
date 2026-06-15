@@ -37,6 +37,8 @@ class evaluation_maestro():
 		#elif(self.nnmodel == 'Transformer'): model_filename = './desc/model/Transformer_Complete_model.m'
 		elif(self.nnmodel == 'Transformer'): model_filename = './desc/model/Transformer_Complete_model_littleRS.m'
 		elif(self.nnmodel == 'GNMT'): model_filename = './desc/model/gnmt_model.m'
+		elif(self.nnmodel == 'Bert_small'): model_filename = './desc/model/Bert_small_model.m'
+		elif(self.nnmodel == 'Bert_base'): model_filename = './desc/model/Bert_base_model.m'
 		else: pass
 		## get the layer name and type from model file
 		layer_list = []

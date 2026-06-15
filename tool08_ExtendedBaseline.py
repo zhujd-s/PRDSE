@@ -11,7 +11,7 @@ from evaluation_maestro import evaluation_maestro
 
 
 EXTRA_METRICS = ["throughput", "throughput_per_energy", "offchip_bw_req"]
-MODEL_NAMES = ["VGG16", "MobileNetV2", "MnasNet", "ResNet50", "Transformer", "GNMT"]
+MODEL_NAMES = ["Bert_small", "Bert_base"]
 TARGET = "cloud"
 SAMPLE_COUNT = 200
 SAMPLE_SEED = 20250608

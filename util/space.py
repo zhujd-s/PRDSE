@@ -383,6 +383,8 @@ def create_space_maestro(model, is_adaptive = True, is_const = False, target = "
 	#elif(model == 'Transformer'): model_filename = './desc/model/Transformer_Complete_model.m'
 	elif(model == 'Transformer'): model_filename = './desc/model/Transformer_Complete_model_littleRS.m'
 	elif(model == 'GNMT'): model_filename = './desc/model/gnmt_model.m'
+	elif(model == 'Bert_small'): model_filename = './desc/model/Bert_small_model.m'
+	elif(model == 'Bert_base'): model_filename = './desc/model/Bert_base_model.m'
 	else: pass
 	## get the layer name and type from model file
 	layer_list = []

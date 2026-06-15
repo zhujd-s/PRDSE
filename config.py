@@ -5,7 +5,7 @@ global config
 class config_global():
 	def __init__(self, is_setup = False):
 		# here define the model and constraint 
-		self.MODEL = ["VGG16","MobileNetV2","Mnasnet","ResNet50","Transformer","GNMT"]
+		self.MODEL = ["VGG16","MobileNetV2","MnasNet","ResNet50","Transformer","GNMT","Bert_small","Bert_base"]
 		self.CST = ["cloud","largeedge","smalledge"]
 		# test
 		self.period = 1000
@@ -25,7 +25,7 @@ class config_global():
 			self.SCEN_NUM = 1	
 			self.PROCESS_NUM = self.MODEL_NUM
 
-		#### MODEL:{0="VGG16",1="MobileNetV2",2="Mnasnet",3="ResNet50",4="Transformer",5="GNMT"}
+		#### MODEL:{0="VGG16",1="MobileNetV2",2="MnasNet",3="ResNet50",4="Transformer",5="GNMT",6="Bert_small",7="Bert_base"}
 		#### CST:{0="cloud",1="largeedge",2="smalledge"}
 		# here choose the model which we don't use
 		PASS_MODEL = [0,3,4,5]

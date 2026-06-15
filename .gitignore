@@ -13,6 +13,10 @@ desc/hw_*.m
 # MAESTRO output file will not be updated
 dataflow_*.m
 
+# generated figures
+*.pdf
+*.svg
+
 # pyc files
 __pycache__/
 util/__pycache__/

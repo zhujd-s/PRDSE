@@ -16,7 +16,7 @@ def int_to_scientific_count(n):
 
 if __name__ == '__main__':
 	#model_list = {"AlexNet", "VGG16", "MobileNetV2", "MnasNet", "GoogleNet", "ResNet50", "ResNet101", "ResNet152"}
-	model_list = {"VGG16", "MobileNetV2", "MnasNet", "ResNet50", "GNMT", "Transformer"}
+	model_list = {"VGG16", "MobileNetV2", "MnasNet", "ResNet50", "GNMT", "Transformer", "Bert_small", "Bert_base"}
 
 	for model in model_list:
 		print(f"Model: {model}")
