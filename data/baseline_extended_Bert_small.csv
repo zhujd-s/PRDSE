@@ -1,0 +1,2 @@
+throughput,throughput_avg,throughput_median,throughput_per_energy,throughput_per_energy_avg,throughput_per_energy_median,offchip_bw_req,offchip_bw_req_avg,offchip_bw_req_median,sample_count,sample_seed
+253.23656219755247,11.682683784663585,3.435584123383302,102423933.18166666,6502635.327246667,2304391.396433333,126.15,13.219500000000004,2.175,200,20250608

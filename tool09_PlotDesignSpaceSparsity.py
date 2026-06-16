@@ -133,7 +133,7 @@ def main():
 	ax.set_ylim(bottom=0)
 	ax.grid(True, linestyle="-", linewidth=0.35, alpha=0.28)
 	legend_handles = [
-		Line2D([0], [0], marker="o", color="none", markerfacecolor="lightgray", markeredgecolor="none", markersize=4, label="Reward \u2264 0.80"),
+		Line2D([0], [0], marker="o", color="none", markerfacecolor="lightgray", markeredgecolor="none", markersize=4, label="Reward < 0.85"),
 		Line2D([0], [0], marker="o", color="none", markerfacecolor="#f2a51a", markeredgecolor="none", markersize=5, label="Reward \u2265 0.85"),
 		Line2D([0], [0], marker="o", color="none", markerfacecolor="#d62728", markeredgecolor="black", markeredgewidth=0.4, markersize=5, label="Reward \u2265 0.95"),
 	]
