@@ -52,7 +52,9 @@ def run(args):
 
 			#TODO runtime return a correct value which is required to be repaired
 			metrics = evaluation.evaluate(status)
-			sample = list(status.values()) + list(metrics.values())
+			if(metrics is None):
+				continue
+			sample = list(status.values()) + [metrics[name] for name in metrics_name]
 			initial_sample_warehouse.append(sample)
 		            
 

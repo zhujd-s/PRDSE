@@ -28,7 +28,7 @@ class config_global():
 		#### MODEL:{0="VGG16",1="MobileNetV2",2="MnasNet",3="ResNet50",4="Transformer",5="GNMT",6="Bert_small",7="Bert_base"}
 		#### CST:{0="cloud",1="largeedge",2="smalledge"}
 		# here choose the model which we don't use
-		PASS_MODEL = [0,3,4,5]
+		PASS_MODEL = [0,3,4,5,6,7]
 		PASS_CST = [0,1]
 		self.TEST_BOUND = int(self.SCEN_NUM * self.MODEL_NUM * self.CST_NUM)
 		self.PASS = list()

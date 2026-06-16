@@ -316,7 +316,7 @@ class evaluation_maestro():
 				'l2_mem':l2_size, # unit: Byte
 				#'mac':mac,
 				'edp':edp,
-				'pe_ac_req':pe_ac_req,
+				'pe_util':pe_ac_req,
 				'noc_bw_req':noc_bw_req,
 				'offchip_bw_req':offchip_bw_req,
 				'l1_mem_req':l1_mem_req,
